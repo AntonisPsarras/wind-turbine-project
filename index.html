@@ -1,0 +1,921 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wind Turbine Project Build Guide</title>
+<meta name="description" content="Build guide for a 3D-printed balcony wind turbine that charges an 18650 battery: circuit, schematic, perfboard layout, soldering steps and assembly.">
+<meta property="og:title" content="Wind Turbine Project Build Guide">
+<meta property="og:description" content="Circuit, schematic, perfboard layout, soldering steps and assembly for a 3D-printed balcony wind turbine.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://AntonisPsarras.github.io/wind-turbine-project/images/pair.jpg">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+/* base reset */
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%;height:auto}
+[hidden]{display:none!important}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a build sheet. One reading column (max 1120px) with wide diagram panels.
+   Colours come from the build itself: perfboard tan, module blue, wire orange/red/black. */
+:root{
+  --bg:#ECEFF0; --surface:#FFFFFF; --sunk:#E1E6E8; --ink:#13202A; --muted:#53616B; --line:#C7D0D5;
+  --accent:#B4531B; --accent-ink:#FFFFFF;
+  --module:#1D4E9E; --module-ink:#EAF1FF; --module-2:#2F6FD6; --pad:#C9CFD3;
+  --board:#D9B678; --board-hole:#A07D45; --holder:#22272B; --cell:#E7A9C9; --capbody:#5B3B2C; --captop:#C9CDD0;
+  --pos:#C7372B; --neg:#20262B; --wy:#D49A12; --wg:#2E8B57; --wo:#DD7426; --wt:#9C7B4F; --v5:#A83A8A;
+  --good:#2C8550; --warn:#9E620C; --bad:#B3261E; --led-r:#E5332A; --led-b:#2F7DF6; --led-off:#B9C2C7;
+  --part:#B7C1C7; --part-2:#D3DADE; --part-stroke:#55626B; --metal:#7D8890; --metal-2:#4C565D;
+  --f-display:"Archivo","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E151B; --surface:#152029; --sunk:#1B2833; --ink:#E4EAEE; --muted:#97A6B0; --line:#2C3B47;
+  --accent:#F08C4C; --accent-ink:#1A0E06;
+  --module:#24529F; --module-ink:#EAF1FF; --module-2:#3A78DE; --pad:#AEB6BB;
+  --board:#9A7D4A; --board-hole:#5E4A28; --holder:#0A0D10; --cell:#B9799B; --capbody:#6E4A38; --captop:#9AA1A6;
+  --pos:#EF5B4C; --neg:#A9B4BC; --wy:#E8B53A; --wg:#4CB97C; --wo:#F08C4C; --wt:#C3A276; --v5:#DD72BF;
+  --good:#4CC07A; --warn:#E3A341; --bad:#F06A5F; --led-off:#3A4853;
+  --part:#4C5C68; --part-2:#64767F; --part-stroke:#B3C1CA; --metal:#77838B; --metal-2:#9AA6AE;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0E151B; --surface:#152029; --sunk:#1B2833; --ink:#E4EAEE; --muted:#97A6B0; --line:#2C3B47;
+  --accent:#F08C4C; --accent-ink:#1A0E06;
+  --module:#24529F; --module-ink:#EAF1FF; --module-2:#3A78DE; --pad:#AEB6BB;
+  --board:#9A7D4A; --board-hole:#5E4A28; --holder:#0A0D10; --cell:#B9799B; --capbody:#6E4A38; --captop:#9AA1A6;
+  --pos:#EF5B4C; --neg:#A9B4BC; --wy:#E8B53A; --wg:#4CB97C; --wo:#F08C4C; --wt:#C3A276; --v5:#DD72BF;
+  --good:#4CC07A; --warn:#E3A341; --bad:#F06A5F; --led-off:#3A4853;
+  --part:#4C5C68; --part-2:#64767F; --part-stroke:#B3C1CA; --metal:#77838B; --metal-2:#9AA6AE;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:0 64px}
+.wrap{max-width:1120px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.1;margin:0}
+h1{font-size:clamp(2.3rem,6vw,4.1rem);font-weight:850;font-stretch:118%;letter-spacing:-.01em}
+h2{font-size:clamp(1.6rem,3.4vw,2.3rem);font-weight:800;font-stretch:112%}
+h3{font-size:1.15rem;font-weight:750;font-stretch:105%}
+p{margin:0}
+a{color:var(--accent)}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--muted);max-width:60ch}
+.prose{max-width:68ch;display:grid;gap:14px}
+.muted{color:var(--muted)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* nav */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);margin-inline:calc(-1 * max(16px, env(safe-area-inset-left, 0px)))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.top nav{max-width:1120px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:10px max(16px, env(safe-area-inset-left, 0px));scrollbar-width:none}
+.top a{font-family:var(--f-mono);font-size:.8rem;white-space:nowrap;text-decoration:none;color:var(--muted);padding:6px 10px;border-radius:4px}
+.top a:hover{color:var(--ink);background:var(--sunk)}
+
+section{padding-top:72px;display:grid;gap:22px;scroll-margin-top:60px}
+.sec-head{display:grid;gap:8px}
+.sec-head .num{font-family:var(--f-mono);color:var(--accent);font-size:.85rem;letter-spacing:.06em}
+
+/* hero */
+.hero{padding-top:40px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:36px;align-items:center}
+.hero-text{display:grid;gap:18px;min-width:0}
+.hero figure{margin:0;min-width:0}
+.hero img{display:block;width:100%;border-radius:var(--r);border:1px solid var(--line)}
+.hero figcaption{font-size:.85rem;color:var(--muted);margin-top:8px}
+.specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.specs div{background:var(--surface);padding:12px 14px;display:grid;gap:2px}
+.specs b{font-family:var(--f-display);font-weight:750;font-stretch:108%;font-size:1.02rem}
+.specs span{font-size:.85rem;color:var(--muted)}
+@media (max-width:820px){.hero{grid-template-columns:1fr}}
+
+/* panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:14px;min-width:0}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.scroll-x svg{display:block}
+svg text{font-family:var(--f-mono)}
+.caption{font-size:.88rem;color:var(--muted)}
+.callout{border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 9%,var(--surface));padding:12px 14px;border-radius:0 var(--r) var(--r) 0;font-size:.95rem}
+.callout.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 8%,var(--surface))}
+.callout.good{border-color:var(--good);background:color-mix(in srgb,var(--good) 8%,var(--surface))}
+.callout b{font-weight:600}
+
+/* sim controls */
+.controls{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center}
+.ctl{display:flex;align-items:center;gap:10px;font-size:.92rem}
+.ctl input[type=range]{width:180px;accent-color:var(--accent)}
+.ctl input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.seg button{font:inherit;font-size:.85rem;border:0;background:var(--surface);color:var(--muted);padding:6px 10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.status{font-family:var(--f-mono);font-size:.88rem;padding:8px 12px;border-radius:5px;background:var(--sunk);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--led-off);flex:none}
+.stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.stage{border-top:2px solid var(--ink);padding-top:10px;display:grid;gap:4px;font-size:.93rem;align-content:start}
+.stage h3{font-size:1rem}
+
+/* tables */
+table{border-collapse:collapse;width:100%;min-width:680px;font-size:.93rem}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td.q{font-family:var(--f-mono);white-space:nowrap}
+tbody tr:hover{background:var(--sunk)}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:.72rem;padding:1px 6px;border-radius:3px;background:var(--sunk);color:var(--muted);margin-left:6px;white-space:nowrap}
+.swatch{display:inline-block;width:22px;height:6px;border-radius:3px;vertical-align:middle;margin-right:8px}
+
+/* two column figure */
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.duo{grid-template-columns:1fr}}
+
+/* annotated photo */
+.photo{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);max-width:520px;width:100%;justify-self:center}
+.photo img{display:block;width:100%}
+.pin{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;border:2px solid #fff;background:var(--accent);color:var(--accent-ink);font:600 13px/24px var(--f-mono);text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.45);padding:0}
+.pin.on,.pin:hover{background:#fff;color:#111;border-color:var(--accent)}
+.legend{list-style:none;margin:0;padding:0;display:grid;gap:2px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.legend li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:8px 10px;border-radius:5px;cursor:default;font-size:.93rem}
+.legend li.on{background:var(--sunk)}
+.legend li .n{width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:600 12px/24px var(--f-mono);text-align:center}
+.legend li b{font-weight:600}
+
+/* net chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:.84rem;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--sunk)}
+.net{transition:opacity .2s}
+.dim .net{opacity:.12}
+.dim .net.hl{opacity:1}
+
+/* steps */
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:s}
+.steps>li{counter-increment:s;display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;padding:18px 0;border-top:1px solid var(--line)}
+.steps>li::before{content:counter(s,decimal-leading-zero);font-family:var(--f-display);font-weight:800;font-stretch:112%;font-size:1.5rem;color:var(--accent);line-height:1}
+.steps>li>div{display:grid;gap:8px;min-width:0}
+.check{font-family:var(--f-mono);font-size:.84rem;background:color-mix(in srgb,var(--good) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--good) 35%,var(--line));color:var(--ink);padding:6px 10px;border-radius:5px;justify-self:start}
+.check::before{content:"CHECK  ";color:var(--good);font-weight:600}
+
+/* assembly */
+.asm-ui{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.asm-ui{grid-template-columns:1fr}}
+.asm-stage{background:var(--sunk);border-radius:var(--r);overflow:hidden}
+.asm-stage svg{display:block;width:100%;height:auto}
+.asm-side{display:grid;gap:12px;min-width:0}
+.asm-now{display:grid;gap:6px;min-height:150px}
+.asm-now .k{font-family:var(--f-mono);font-size:.8rem;color:var(--accent)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 14px;border-radius:5px;cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.asm-list{list-style:none;margin:0;padding:0;display:grid;gap:1px;font-size:.88rem}
+.asm-list button{all:unset;cursor:pointer;display:grid;grid-template-columns:28px minmax(0,1fr);gap:6px;padding:5px 8px;border-radius:4px;width:100%;box-sizing:border-box}
+.asm-list button:hover{background:var(--sunk)}
+.asm-list button:focus-visible{outline:2px solid var(--accent)}
+.asm-list .i{font-family:var(--f-mono);color:var(--muted)}
+.asm-list li.done .i{color:var(--good)}
+.asm-list li.cur button{background:var(--sunk);font-weight:600}
+
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:8px;align-content:start}
+.card h3{font-size:1.02rem}
+footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--line);font-size:.88rem;color:var(--muted);display:grid;gap:6px}
+
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+</style>
+</head>
+<body>
+<header class="top"><nav aria-label="Sections">
+  <a href="#how">How it works</a><a href="#parts">Parts</a><a href="#schematic">Schematic</a><a href="#board">Board</a><a href="#bridge">Bridge rectifier</a><a href="#solder">Soldering steps</a><a href="#assembly">Assembly</a><a href="#test">Testing</a><a href="#upgrades">Upgrades</a>
+</nav></header>
+
+<main class="wrap">
+
+<div class="hero">
+  <div class="hero-text">
+    <span class="eyebrow">MakerWorld · Functional, simple turbine</span>
+    <h1>Wind Turbine Project</h1>
+    <p class="lede">A 3D-printed balcony turbine that turns wind into charge for an 18650 battery. This guide covers the circuit, the perfboard layout, the soldering order and how the printed parts go together.</p>
+    <div class="specs">
+      <div><b>Stores energy in</b><span>one 18650 Li-ion cell</span></div>
+      <div><b>Inputs</b><span>1 or 2 turbines into one box</span></div>
+      <div><b>Electronics</b><span>perfboard + 3 cheap modules, no custom PCB</span></div>
+      <div><b>Tools</b><span>soldering iron, multimeter, small screwdriver</span></div>
+    </div>
+  </div>
+  <figure>
+    <img src="images/pair.jpg" alt="Two 3D-printed wind turbines with three black blades and tail fins, mounted on a balcony railing" width="646" height="484">
+    <figcaption>Two turbines on the balcony railing. Each one has its own input on the charging board.</figcaption>
+  </figure>
+</div>
+
+<!-- 01 HOW IT WORKS -->
+<section id="how">
+  <div class="sec-head"><span class="num">01</span><h2>How it works</h2>
+    <p class="lede">The blades spin a small DC motor, which then works as a generator. Its voltage goes up and down with the wind, so it passes through four stages before it reaches the battery.</p></div>
+  <div class="panel">
+    <div class="controls">
+      <label class="ctl" for="wind">Wind <input id="wind" type="range" min="0" max="100" value="65"> <span id="windv" class="mono">65%</span></label>
+      <label class="ctl" for="rev"><input id="rev" type="checkbox"> Rotor spins backwards</label>
+      <span class="ctl">Diodes
+        <span class="seg" role="group" aria-label="Diode type">
+          <button id="dSi" type="button" aria-pressed="true">Silicon 1N5408</button><button id="dSch" type="button" aria-pressed="false">Schottky 1N5822</button>
+        </span></span>
+    </div>
+    <div class="scroll-x"><svg id="flow" viewBox="0 0 1100 330" width="1100" height="330" role="img" aria-label="Animated diagram of energy flowing from the rotor through the motor, bridge rectifier, capacitor, boost converter and charger into the battery, with a voltage trace under each stage"></svg></div>
+    <div class="status" id="status"><span class="dot" id="led"></span><span id="statustext">Charging</span></div>
+    <p class="caption">Illustrative simulation to show the behaviour, not measured data. Real voltages depend on your motor and the wind.</p>
+  </div>
+  <div class="stages">
+    <div class="stage"><h3>1 · Motor as generator</h3><p>Spinning a brushed DC motor makes a DC voltage that rises with speed. If a gust pushes the rotor backwards, the polarity flips. Tick “Rotor spins backwards” to see it.</p></div>
+    <div class="stage"><h3>2 · Bridge rectifier</h3><p>Four diodes make the output positive whichever way the motor turns, so the turbine wires can go either way round. Each pass costs two diode drops.</p></div>
+    <div class="stage"><h3>3 · Capacitor</h3><p>A large electrolytic smooths gusts and the motor’s brush ripple, and gives the boost converter a short reserve to start from.</p></div>
+    <div class="stage"><h3>4 · MT3608 boost</h3><p>Turns anything above about 2 V into a steady 5 V. Below that it does not start, which is why light wind gives no charge.</p></div>
+    <div class="stage"><h3>5 · TP4056 charger</h3><p>Charges the 18650 to 4.2 V and protects it from overcharge, overdischarge and short circuit. Red LED is charging, blue is full.</p></div>
+  </div>
+</section>
+
+<!-- 02 PARTS -->
+<section id="parts">
+  <div class="sec-head"><span class="num">02</span><h2>Parts list</h2>
+    <p class="lede">For one charging box with two turbines. For a single turbine, halve the diodes, use one MT3608 and leave input B empty.</p></div>
+  <div class="panel scroll-x">
+    <table>
+      <thead><tr><th>Part</th><th>Qty</th><th>Job</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><b>MT3608 boost module</b> <span class="tag">HW-045</span></td><td class="q">2</td><td>Raises the turbine voltage to 5 V</td><td>One per turbine. The blue trimmer sets the output voltage.</td></tr>
+        <tr><td><b>TP4056 charger with protection</b> <span class="tag">03962A</span></td><td class="q">1</td><td>Charges and protects the 18650</td><td>Buy the 6-pad version with <code>B+ B−</code> and <code>OUT+ OUT−</code>. The 4-pad version has no protection.</td></tr>
+        <tr><td><b>Rectifier diode, 3 A</b> <span class="tag">1N5408 size</span></td><td class="q">8</td><td>Two bridge rectifiers</td><td>4 per turbine. The original uses large DO-201 silicon diodes. 1N5822 Schottky diodes work better (see Upgrades).</td></tr>
+        <tr><td><b>Electrolytic capacitor</b></td><td class="q">1–2</td><td>Smooths the rectified voltage</td><td>The original has one large can. Its value isn’t readable in the photos; 1000 µF at 16 V or higher works.</td></tr>
+        <tr><td><b>18650 Li-ion cell</b> + single holder with leads</td><td class="q">1</td><td>Energy storage</td><td>Use a real, branded cell. Holder leads: red +, black −.</td></tr>
+        <tr><td><b>Perfboard</b></td><td class="q">1</td><td>Carries everything</td><td>The original is about 4 × 9 cm, single-sided, 2.54 mm pitch.</td></tr>
+        <tr><td><b>2-pin connectors</b> <span class="tag">Dupont / JST</span></td><td class="q">3</td><td>Turbine A, turbine B, battery</td><td>Lets you unplug the turbines and the battery.</td></tr>
+        <tr><td><b>Male header pins</b></td><td class="q">~12</td><td>Mount the modules</td><td>The modules stand on pins soldered into the perfboard.</td></tr>
+        <tr><td><b>Small brushed DC motor</b> (2 wires)</td><td class="q">1 per turbine</td><td>The generator</td><td>Must fit the nacelle housing. Measure the bore in your slicer before buying.</td></tr>
+        <tr><td><b>2-core wire, hook-up wire, heat-shrink</b></td><td class="q">—</td><td>Turbine leads and on-board links</td><td>Leave enough length to reach from the turbine head down to the box.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 03 SCHEMATIC -->
+<section id="schematic">
+  <div class="sec-head"><span class="num">03</span><h2>Schematic</h2>
+    <p class="lede">Two identical input channels feed one charger. Each MT3608 has its own output diode inside, so the two outputs can be joined directly.</p></div>
+  <div class="panel">
+    <div class="scroll-x"><svg id="sch" viewBox="0 0 1100 540" width="1100" height="540" role="img" aria-label="Schematic: each turbine motor goes to a bridge rectifier, a capacitor and an MT3608 boost converter; both boost outputs join at the TP4056 input; the TP4056 B+ and B- pads go to the 18650 cell"></svg></div>
+    <div class="callout bad"><b>B− is not ground on this charger.</b> On the 03962A board the protection chip sits between <code>B−</code> and <code>OUT−</code>/<code>IN−</code>. Connect only the battery to <code>B+</code>/<code>B−</code>, and never join <code>B−</code> to any other negative wire, or the protection stops working.</div>
+  </div>
+</section>
+
+<!-- 04 BOARD -->
+<section id="board">
+  <div class="sec-head"><span class="num">04</span><h2>The board</h2>
+    <p class="lede">Left: the original build, numbered. Right: the same layout drawn out, with the connections from the schematic. Tap a wire group to highlight it.</p></div>
+  <div class="duo">
+    <div class="panel">
+      <div class="photo" id="photo">
+        <img src="images/board.jpg" alt="Inside the original charging box: an 18650 holder on the left, and on the perfboard two blue boost modules, a charger module, a large capacitor and diodes" width="650" height="800">
+      </div>
+      <ol class="legend" id="legend"></ol>
+    </div>
+    <div class="panel">
+      <div class="chips" id="chips"></div>
+      <div class="scroll-x"><svg id="pcb" viewBox="0 0 640 860" width="100%" style="min-width:420px;max-width:600px" role="img" aria-label="Perfboard layout drawing: boost B at the top, TP4056 in the middle, boost A below it, bridge B at bottom left, capacitor and bridge A at bottom right, input connectors along the bottom edge, battery holder to the left"></svg></div>
+      <p class="caption">The original uses insulated jumper wires and solder bridges on the back, which aren’t visible in the photos. This drawing keeps the original placement and wires it exactly as the schematic.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 BRIDGE -->
+<section id="bridge">
+  <div class="sec-head"><span class="num">05</span><h2>Wiring the bridge rectifier</h2>
+    <p class="lede">This is where most mistakes happen. Build one bridge per turbine.</p></div>
+  <div class="duo">
+    <div class="panel"><div class="scroll-x"><svg id="br" viewBox="0 0 540 330" width="100%" style="min-width:420px" role="img" aria-label="Bridge rectifier wiring: two legs of two diodes each between a plus rail and a minus rail, all diode stripes facing the plus rail, motor wires to the middle of each leg, capacitor across the rails"></svg></div></div>
+    <div class="prose">
+      <p><b>The rule: every stripe faces the + rail.</b> The stripe marks the cathode. Make two legs, each with two diodes in series, both stripes pointing up toward +.</p>
+      <p><b>Motor wires</b> go to the middle of each leg, one wire per leg. Polarity doesn’t matter here.</p>
+      <p><b>The + rail</b> (where two stripes meet) goes to the capacitor’s + leg and to <code>VIN+</code> on the MT3608.</p>
+      <p><b>The − rail</b> (where two plain ends meet) goes to the capacitor’s stripe (−) and to <code>VIN−</code>.</p>
+      <p class="muted">In the original, bridge A stands in a row at the bottom right with every stripe at the top, and bridge B is four diodes standing on end at the bottom left.</p>
+      <div class="callout"><b>Check before connecting the boost.</b> Spin the motor by hand and measure between the rails. It should read positive either way you spin it.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 SOLDER -->
+<section id="solder">
+  <div class="sec-head"><span class="num">06</span><h2>Soldering, step by step</h2>
+    <p class="lede">Do the steps in this order. Each one ends with a quick check so a mistake can’t hide until the end.</p></div>
+  <ol class="steps">
+    <li><div><h3>Set both MT3608 modules to 5.0 V before soldering anything</h3>
+      <p>Power each module’s <code>VIN+</code>/<code>VIN−</code> from 3.7–5 V (a USB lead or the 18650 itself). Measure <code>VOUT</code> and turn the brass screw on the blue trimmer until you read 5.0 V. It can take 10–20 turns before anything changes.</p>
+      <div class="callout bad"><b>New modules often arrive set to 12–28 V.</b> The TP4056 is damaged above 8 V, so never connect a boost to the charger before setting it.</div>
+      <span class="check">VOUT = 4.9 – 5.2 V on both modules</span></div></li>
+    <li><div><h3>Mount the three modules</h3>
+      <p>Solder header pins into the module pads, then into the perfboard. From the top: boost B, the TP4056 with its USB socket at the left edge so you can still reach it, then boost A. On both boosts the <code>VOUT</code> pads face left and <code>VIN</code> pads face right, as in the photo.</p>
+      <span class="check">No pins bridged; modules sit flat</span></div></li>
+    <li><div><h3>Build bridge A and capacitor C1</h3>
+      <p>Four diodes in the lower right, stripes toward +, wired as in section 05. Put C1 across the + and − rails, stripe side to −.</p>
+      <span class="check">Spin turbine A by hand: rails read positive both ways</span></div></li>
+    <li><div><h3>Build bridge B</h3>
+      <p>Same circuit in the lower left. The original fits it in by standing the diodes on end. A second capacitor here is a good addition.</p>
+      <span class="check">Same test with turbine B</span></div></li>
+    <li><div><h3>Connect each bridge to its boost</h3>
+      <p>Bridge A + rail to boost A <code>VIN+</code>, − rail to <code>VIN−</code>. Bridge B to boost B the same way.</p>
+      <span class="check">Spin hard: boost output jumps to 5.0 V</span></div></li>
+    <li><div><h3>Join the outputs to the charger</h3>
+      <p>Both <code>VOUT+</code> pads to TP4056 <code>IN+</code>. Both <code>VOUT−</code> pads to <code>IN−</code>. Keep these wires short, along the left edge.</p>
+      <span class="check">With a turbine spinning, IN+ to IN− = 5 V</span></div></li>
+    <li><div><h3>Add the input connectors</h3>
+      <p>Two 2-pin connectors on the bottom edge, wired to the middle points of each bridge. J1 (turbine A) is the centre one, J2 (turbine B) is on the left.</p></div></li>
+    <li><div><h3>Connect the battery last</h3>
+      <p>A 2-pin plug on the TP4056 <code>B+</code>/<code>B−</code> pads. Holder red lead to <code>B+</code>, black to <code>B−</code>. Check the polarity twice before inserting the cell. Cover every splice with heat-shrink.</p>
+      <div class="callout bad"><b>Reversed battery = dead charger</b>, and possibly a hot cell. The TP4056 has no reverse-polarity protection.</div>
+      <span class="check">B+ to B− reads 3.0 – 4.2 V with the cell in</span></div></li>
+    <li><div><h3>Fit it in the box</h3>
+      <p>Battery holder on the left, board on the right, turbine leads out through the slots in the bottom. <code>OUT+</code>/<code>OUT−</code> stay free; that’s where a load such as a USB booster or a light can take power from the battery later.</p></div></li>
+  </ol>
+</section>
+
+<!-- 07 ASSEMBLY -->
+<section id="assembly">
+  <div class="sec-head"><span class="num">07</span><h2>Assembling the turbine</h2>
+    <p class="lede">Same order as the exploded view in the model files. Play it, or step through it part by part.</p></div>
+  <div class="panel asm-ui">
+    <div class="asm-stage"><svg id="asm" viewBox="0 -90 900 760" role="img" aria-label="Animated exploded view of the turbine coming together: motor, housing, rear cap, cover, nose cone, blades, tail, yaw pivot, pole cap, pole, base clamp and locking pin"></svg></div>
+    <div class="asm-side">
+      <div class="asm-now"><span class="k" id="asmK">Step 1 of 12</span><h3 id="asmT">Motor into the housing</h3><p id="asmD"></p></div>
+      <div class="btns"><button class="btn" id="asmPrev" type="button">Back</button><button class="btn primary" id="asmPlay" type="button">Pause</button><button class="btn" id="asmNext" type="button">Next</button></div>
+      <ol class="asm-list" id="asmList"></ol>
+    </div>
+  </div>
+  <div class="grid3">
+    <div class="card"><h3>Wire routing</h3><p>Lead the two motor wires out under the nacelle and down beside the pole, as in the photos. Leave a loose loop at the top so the head can turn with the wind without pulling on the solder joints.</p></div>
+    <div class="card"><h3>Blade balance</h3><p>Weigh the three blades and sand the heaviest one until they match. An unbalanced rotor shakes, wastes energy and loosens the hub.</p></div>
+    <div class="card"><h3>Mounting</h3><p>The base clamps to a railing or post; the pin with the ring locks it. The originals also have a strap around the pole for extra hold in strong wind.</p></div>
+  </div>
+</section>
+
+<!-- 08 TEST -->
+<section id="test">
+  <div class="sec-head"><span class="num">08</span><h2>Testing and troubleshooting</h2>
+    <p class="lede">Test on the bench with a cordless drill spinning the hub (gently, at low speed) before going outside.</p></div>
+  <div class="panel scroll-x">
+    <table>
+      <thead><tr><th>What you see</th><th>Likely cause</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Nothing happens in light wind</td><td>Below about 2 V after the bridge, the MT3608 doesn’t start</td><td>Normal. Schottky diodes or a higher-voltage motor lower the threshold.</td></tr>
+        <tr><td>Red LED flickers on and off</td><td>The charger asks for more current than the turbine can give, the voltage sags, it restarts</td><td>Normal in gusty wind. Lower the charge current to make it steadier (Upgrades).</td></tr>
+        <tr><td>Boost output reads 0 V either way</td><td>A diode in the bridge is reversed, or VIN+/VIN− swapped</td><td>Recheck that every stripe faces the + rail.</td></tr>
+        <tr><td>Boost output is far above 5 V</td><td>Trimmer not set</td><td>Disconnect from the TP4056 and set it to 5.0 V first.</td></tr>
+        <tr><td>LEDs on but battery voltage doesn’t rise</td><td>Battery wired to OUT+/OUT− instead of B+/B−</td><td>Move the battery plug to B+/B−.</td></tr>
+        <tr><td>Blue LED stays on, cell isn’t full</td><td>Cell not connected, or holder springs not touching</td><td>Measure at B+/B− with the cell in.</td></tr>
+        <tr><td>MT3608 gets hot</td><td>Output shorted or charger drawing 1 A from a weak input</td><td>Check for bridges; lower the charge current.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 09 UPGRADES -->
+<section id="upgrades">
+  <div class="sec-head"><span class="num">09</span><h2>Optional upgrades</h2>
+    <p class="lede">Not in the original build, but each one helps a small turbine.</p></div>
+  <div class="grid3">
+    <div class="card"><h3>Schottky diodes</h3><p>Swap the 1N5408s for 1N5822. A silicon diode drops about 0.9 V, a Schottky about 0.4 V. Two sit in the path, so the turbine starts charging about 1 V sooner. Try it in the simulation above.</p></div>
+    <div class="card"><h3>Lower charge current</h3><p>The resistor marked <code>R3</code> (printed “122”, 1.2 kΩ) sets 1 A of charge current, far more than a small turbine makes. Replacing it with 4.7 kΩ (about 250 mA) or 10 kΩ (about 130 mA) gives steadier charging.</p></div>
+    <div class="card"><h3>Second capacitor</h3><p>Add 1000 µF across bridge B as well, so both channels behave the same.</p></div>
+    <div class="card"><h3>Outdoor plastic</h3><p>PLA softens in summer sun on a balcony. PETG or ASA keep the blades and hub in shape.</p></div>
+    <div class="card"><h3>Keep the box cool and dry</h3><p>Li-ion cells shouldn’t charge above about 45 °C. Mount the box in shade and keep rain off the open front.</p></div>
+    <div class="card"><h3>Use the stored energy</h3><p>Connect a second MT3608 set to 5 V, or a small USB booster, to <code>OUT+</code>/<code>OUT−</code> to charge a phone or run a light from the battery.</p></div>
+  </div>
+</section>
+
+<footer>
+     <span>Wind Turbine Project · build guide for the <a href="https://makerworld.com/en/models/2967248">MakerWorld model</a>.</span>
+  <span>Reconstructed from photos of the original build and the exploded view in the model files. Circuit values marked as unreadable were chosen to work, not copied.</span>
+</footer>
+</main>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const reduce = (()=>{try{return matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){return false}})();
+function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e}
+function txt(p,x,y,s,o={}){return el("text",Object.assign({x,y,fill:"var(--ink)","font-size":13},o),p,s)}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+
+/* ---------- shared symbol helpers ---------- */
+function rotor(p,cx,cy,L,cls){ // front view rotor
+  const g=el("g",{transform:`translate(${cx} ${cy})`},p);
+  const r=el("g",{},g);
+  for(let i=0;i<3;i++){el("path",{d:`M -${L*.07} -${L*.12} C -${L*.16} -${L*.45} -${L*.12} -${L*.8} -${L*.03} -${L} L ${L*.04} -${L} C ${L*.09} -${L*.7} ${L*.12} -${L*.4} ${L*.08} -${L*.12} Z`,fill:"var(--ink)",transform:`rotate(${i*120})`},r)}
+  el("circle",{r:L*.14,fill:"var(--part-2)",stroke:"var(--ink)","stroke-width":2},g);
+  return r;
+}
+
+/* =========================================================
+   01  ENERGY FLOW SIMULATION
+   ========================================================= */
+const F=document.getElementById("flow");
+const sim={t:0,w:.65,rev:false,schottky:false,vc:0,boostOn:false,bat:48,full:0,ang:0,phase:[0,0,0,0,0],hist:[[],[],[],[]],v:{m:0,b:0,c:0,o:0},charging:false};
+window.__sim=sim;
+(function buildFlow(){
+  const Y=92;
+  // shaft between rotor and motor
+  el("rect",{x:96,y:Y-4,width:84,height:8,fill:"var(--metal)",rx:2},F);
+  sim.shaft=el("g",{},F);
+  for(let i=0;i<6;i++) el("rect",{x:96+i*14,y:Y-4,width:3,height:8,fill:"var(--metal-2)"},sim.shaft);
+  // wires
+  const segs=[[242,330],[390,466],[514,570],[690,760],[880,948]];
+  sim.segs=segs.map(([a,b])=>{
+    el("line",{x1:a,y1:Y,x2:b,y2:Y,stroke:"var(--line)","stroke-width":6,"stroke-linecap":"round"},F);
+    const g=el("g",{},F);const n=Math.ceil((b-a)/20);const dots=[];
+    for(let i=0;i<n;i++)dots.push(el("circle",{cx:a,cy:Y,r:3.2,fill:"var(--accent)"},g));
+    return {a,b,g,dots};
+  });
+  // rotor + pole
+  el("rect",{x:57,y:Y,width:6,height:80,fill:"var(--part-stroke)"},F);
+  sim.rot=rotor(F,60,Y,52);
+  txt(F,60,186,"Rotor",{"text-anchor":"middle",fill:"var(--muted)","font-size":12});
+  // motor
+  el("circle",{cx:210,cy:Y,r:32,fill:"var(--surface)",stroke:"var(--ink)","stroke-width":2.5},F);
+  txt(F,210,Y+6,"M",{"text-anchor":"middle","font-size":20,"font-weight":600});
+  // bridge
+  el("path",{d:`M360 ${Y-34} L394 ${Y} L360 ${Y+34} L326 ${Y} Z`,fill:"var(--surface)",stroke:"var(--ink)","stroke-width":2.5},F);
+  el("path",{d:`M352 ${Y+9} L352 ${Y-9} L366 ${Y} Z`,fill:"var(--ink)"},F);
+  el("line",{x1:367,y1:Y-9,x2:367,y2:Y+9,stroke:"var(--ink)","stroke-width":2.5},F);
+  // cap
+  el("line",{x1:466,y1:Y,x2:484,y2:Y,stroke:"var(--line)","stroke-width":6},F);
+  el("line",{x1:484,y1:Y-22,x2:484,y2:Y+22,stroke:"var(--ink)","stroke-width":4},F);
+  el("path",{d:`M500 ${Y-22} Q492 ${Y} 500 ${Y+22}`,fill:"none",stroke:"var(--ink)","stroke-width":4},F);
+  txt(F,476,Y-28,"+",{"font-size":14});
+  // boost
+  el("rect",{x:570,y:Y-32,width:120,height:64,rx:5,fill:"var(--module)"},F);
+  txt(F,630,Y-4,"MT3608",{"text-anchor":"middle",fill:"var(--module-ink)","font-size":15,"font-weight":600});
+  txt(F,630,Y+15,"boost → 5 V",{"text-anchor":"middle",fill:"var(--module-ink)","font-size":11});
+  // tp4056
+  el("rect",{x:760,y:Y-32,width:120,height:64,rx:5,fill:"var(--module)"},F);
+  txt(F,812,Y-4,"TP4056",{"text-anchor":"middle",fill:"var(--module-ink)","font-size":15,"font-weight":600});
+  txt(F,812,Y+15,"charger",{"text-anchor":"middle",fill:"var(--module-ink)","font-size":11});
+  sim.led=el("circle",{cx:864,cy:Y-18,r:6,fill:"var(--led-off)",stroke:"var(--module-ink)","stroke-width":1},F);
+  // battery
+  el("rect",{x:948,y:Y-22,width:128,height:44,rx:8,fill:"var(--surface)",stroke:"var(--ink)","stroke-width":2.5},F);
+  el("rect",{x:1076,y:Y-9,width:7,height:18,rx:2,fill:"var(--ink)"},F);
+  sim.batfill=el("rect",{x:952,y:Y-18,width:60,height:36,rx:5,fill:"var(--good)"},F);
+  // labels
+  [["DC motor",210],["Bridge",360],["Capacitor",490],["Boost",630],["Charger",820],["18650 battery",1012]].forEach(([s,x])=>txt(F,x,148,s,{"text-anchor":"middle",fill:"var(--muted)","font-size":12}));
+  // scopes
+  const sx=[210,360,490,630];const names=["Motor output","After bridge","After capacitor","Boost output"];
+  sim.scope=sx.map((cx,i)=>{
+    const x0=cx-62,w=124,y0=180,h=100,mid=y0+h/2;
+    el("rect",{x:x0,y:y0,width:w,height:h,rx:4,fill:"var(--sunk)"},F);
+    el("line",{x1:x0,y1:mid,x2:x0+w,y2:mid,stroke:"var(--line)","stroke-width":1},F);
+    el("line",{x1:x0,y1:mid-25,x2:x0+w,y2:mid-25,stroke:"var(--muted)","stroke-width":1,"stroke-dasharray":"3 4",opacity:.6},F);
+    if(i===0){txt(F,x0+w+3,mid-21,"5V",{fill:"var(--muted)","font-size":9});}
+    txt(F,x0,y0-7,names[i],{fill:"var(--muted)","font-size":11});
+    const pl=el("polyline",{fill:"none",stroke:"var(--accent)","stroke-width":2,"stroke-linejoin":"round"},F);
+    const rd=txt(F,cx,y0+h+22,"0.0 V",{"text-anchor":"middle","font-size":15,"font-weight":600});
+    return {x0,w,mid,pl,rd};
+  });
+  txt(F,820,173,"State",{"text-anchor":"middle",fill:"var(--muted)","font-size":11});
+  sim.state1=txt(F,820,222,"",{"text-anchor":"middle","font-size":15,"font-weight":600});
+  sim.state2=txt(F,820,244,"",{"text-anchor":"middle","font-size":11,fill:"var(--muted)"});
+  txt(F,1012,173,"Charge",{"text-anchor":"middle",fill:"var(--muted)","font-size":11});
+  sim.pct=txt(F,1012,222,"",{"text-anchor":"middle","font-size":15,"font-weight":600});
+  sim.pct2=txt(F,1012,244,"",{"text-anchor":"middle","font-size":11,fill:"var(--muted)"});
+})();
+function simStep(dt){
+  const s=sim; s.t+=dt;const t=s.t;
+  const g=Math.max(0,s.w*(1+.17*Math.sin(1.3*t)+.08*Math.sin(3.1*t+1)));
+  const dir=s.rev?-1:1;
+  s.ang=(s.ang+dir*g*720*dt)%360;
+  const vm=dir*9.5*g+.35*g*Math.sin(t*55);
+  const vf=s.schottky?.42:.88;
+  const vb=Math.max(Math.abs(vm)-2*vf,0);
+  s.vc+= (vb-s.vc)*Math.min(1,dt*(vb>s.vc?20:1.1));
+  if(s.boostOn&&s.vc<1.8)s.boostOn=false; if(!s.boostOn&&s.vc>2.0)s.boostOn=true;
+  const vo=s.boostOn?5+.05*Math.sin(t*70):Math.max(s.vc-.4,0);
+  s.charging=vo>4.3;
+  if(s.full>0){s.full-=dt;if(s.full<=0){s.bat=48}}
+  else if(s.charging){s.bat+=dt*1.4*g;if(s.bat>=100){s.bat=100;s.full=3}}
+  s.v={m:vm,b:vb,c:s.vc,o:vo};
+  const vals=[vm,vb,s.vc,vo];
+  vals.forEach((v,i)=>{const h=s.hist[i];h.push(v);if(h.length>124)h.shift()});
+  const sp=30+170*g;
+  const act=[vb>.05,vb>.05,s.vc>.45,s.charging,s.charging];
+  s.segs.forEach((sg,i)=>{s.phase[i]=(s.phase[i]+dt*sp)%20;sg.g.style.opacity=act[i]?1:0;
+    sg.dots.forEach((d,k)=>{const x=sg.a+((s.phase[i]+k*20)%(sg.b-sg.a));d.setAttribute("cx",x)})});
+}
+function simDraw(){
+  const s=sim;
+  s.rot.setAttribute("transform",`rotate(${s.ang})`);
+  s.shaft.setAttribute("transform",`translate(${((s.ang/360*14*6)%14+14)%14-7} 0)`);
+  s.scope.forEach((sc,i)=>{const h=s.hist[i];let pts="";
+    for(let k=0;k<h.length;k++){pts+=`${(sc.x0+k).toFixed(1)},${(sc.mid-clamp(h[k],-10,10)*5).toFixed(1)} `}
+    sc.pl.setAttribute("points",pts);
+    const v=[s.v.m,s.v.b,s.v.c,s.v.o][i];sc.rd.textContent=`${v.toFixed(1)} V`;
+    sc.pl.setAttribute("stroke", v< -0.05?"var(--bad)":"var(--accent)");
+  });
+  const full=s.full>0;
+  s.led.setAttribute("fill",full?"var(--led-b)":s.charging?"var(--led-r)":"var(--led-off)");
+  s.state1.textContent=full?"Full":s.charging?"Charging":"Idle";
+  s.state1.setAttribute("fill",full?"var(--led-b)":s.charging?"var(--good)":"var(--muted)");
+  s.state2.textContent=full?"blue LED":s.charging?"red LED":"needs 5 V in";
+  s.batfill.setAttribute("width",(120*s.bat/100).toFixed(1));
+  s.pct.textContent=`${Math.round(s.bat)} %`;
+  s.pct2.textContent=full?"resets for demo":s.charging?"rising":"holding";
+  const st=document.getElementById("statustext"),led=document.getElementById("led");
+  let msg;
+  if(s.w<.02)msg="No wind. Nothing moves.";
+  else if(s.charging)msg=`Charging. The boost holds 5.0 V while the bridge gives ${s.v.c.toFixed(1)} V.`;
+  else if(s.v.c>0.1)msg=`Not charging. ${s.v.c.toFixed(1)} V after the bridge is below the ~2 V the MT3608 needs to start.`;
+  else msg="Not charging. The motor voltage is lost in the two diode drops.";
+  if(s.rev&&s.w>.02)msg+=" Motor polarity is reversed, but the bridge output is still positive.";
+  st.textContent=msg;led.style.background=full?"var(--led-b)":s.charging?"var(--led-r)":"var(--led-off)";
+}
+const windEl=document.getElementById("wind");
+windEl.addEventListener("input",()=>{sim.w=windEl.value/100;document.getElementById("windv").textContent=windEl.value+"%"});
+document.getElementById("rev").addEventListener("change",e=>{sim.rev=e.target.checked});
+const dSi=document.getElementById("dSi"),dSch=document.getElementById("dSch");
+dSi.onclick=()=>{sim.schottky=false;dSi.setAttribute("aria-pressed","true");dSch.setAttribute("aria-pressed","false")};
+dSch.onclick=()=>{sim.schottky=true;dSch.setAttribute("aria-pressed","true");dSi.setAttribute("aria-pressed","false")};
+for(let i=0;i<180;i++)simStep(1/60);simDraw();
+
+/* =========================================================
+   03  SCHEMATIC
+   ========================================================= */
+(function(){
+  const S=document.getElementById("sch");
+  const W=(d,c="var(--ink)",w=2)=>el("path",{d,fill:"none",stroke:c,"stroke-width":w,"stroke-linejoin":"round","stroke-linecap":"round"},S);
+  const J=(x,y)=>el("circle",{cx:x,cy:y,r:4.5,fill:"var(--ink)"},S);
+  const pinLbl=(x,y,s,anchor)=>txt(S,x,y+4,s,{"font-size":11,"text-anchor":anchor,fill:"var(--muted)"});
+  function channel(y0,tag,mot,opt){
+    // motor
+    el("circle",{cx:90,cy:y0,r:30,fill:"var(--surface)",stroke:"var(--ink)","stroke-width":2},S);
+    txt(S,90,y0+6,"M",{"text-anchor":"middle","font-size":18,"font-weight":600});
+    txt(S,90,y0-48,`Turbine ${tag}`,{"text-anchor":"middle","font-size":13,"font-weight":600});
+    txt(S,90,y0+52,mot,{"text-anchor":"middle","font-size":11,fill:"var(--muted)"});
+    W(`M110 ${y0-21} L150 ${y0-21} L150 ${y0-25} H260`);W(`M110 ${y0+21} L150 ${y0+21} L150 ${y0+25} H260`);
+    // connector J
+    el("rect",{x:176,y:y0-36,width:24,height:72,rx:3,fill:"var(--surface)",stroke:"var(--ink)","stroke-width":1.5},S);
+    el("circle",{cx:188,cy:y0-25,r:3.5,fill:"var(--ink)"},S);el("circle",{cx:188,cy:y0+25,r:3.5,fill:"var(--ink)"},S);
+    txt(S,188,y0-44,tag==="A"?"J1":"J2",{"text-anchor":"middle","font-size":12,"font-weight":600});
+    // bridge block
+    el("rect",{x:260,y:y0-50,width:96,height:100,rx:4,fill:"var(--surface)",stroke:"var(--ink)","stroke-width":2},S);
+    el("path",{d:`M300 ${y0+10} L300 ${y0-10} L316 ${y0} Z`,fill:"var(--ink)"},S);el("line",{x1:317,y1:y0-10,x2:317,y2:y0+10,stroke:"var(--ink)","stroke-width":2},S);
+    txt(S,308,y0-62,tag==="A"?"Bridge A · D1–D4":"Bridge B · D5–D8",{"text-anchor":"middle","font-size":12,"font-weight":600});
+    txt(S,308,y0+68,"4× 1N5408",{"text-anchor":"middle","font-size":11,fill:"var(--muted)"});
+    pinLbl(268,y0-25,"~","start");pinLbl(268,y0+25,"~","start");pinLbl(348,y0-25,"+","end");pinLbl(348,y0+25,"−","end");
+    // rails
+    W(`M356 ${y0-25} H520`, "var(--wo)",2.5);W(`M356 ${y0+25} H520`,"var(--ink)",2.5);
+    // cap
+    const cx=440;J(cx,y0-25);J(cx,y0+25);
+    const dash=opt?{"stroke-dasharray":"4 3"}:{};
+    el("path",Object.assign({d:`M${cx} ${y0-25} V${y0-6} M${cx-14} ${y0-6} H${cx+14}`,stroke:"var(--ink)","stroke-width":2.5,fill:"none"},dash),S);
+    el("path",Object.assign({d:`M${cx-14} ${y0+8} Q${cx} ${y0+1} ${cx+14} ${y0+8} M${cx} ${y0+4} V${y0+25}`,stroke:"var(--ink)","stroke-width":2.5,fill:"none"},dash),S);
+    txt(S,cx-18,y0-10,"+",{"font-size":12,"text-anchor":"end"});
+    txt(S,cx,y0+44,opt?"C2 (optional)":"C1 1000 µF",{"font-size":11,fill:"var(--muted)","text-anchor":"middle"});
+    // boost box
+    el("rect",{x:520,y:y0-50,width:130,height:100,rx:5,fill:"var(--module)"},S);
+    txt(S,585,y0-6,"MT3608",{"text-anchor":"middle","font-size":14,"font-weight":600,fill:"var(--module-ink)"});
+    txt(S,585,y0+12,`boost ${tag} · 5.0 V`,{"text-anchor":"middle","font-size":11,fill:"var(--module-ink)"});
+    [["VIN+",y0-25,"start",526],["VIN−",y0+25,"start",526],["VOUT+",y0-25,"end",644],["VOUT−",y0+25,"end",644]].forEach(([s,y,a,x])=>txt(S,x,y+4,s,{"font-size":10,"text-anchor":a,fill:"var(--module-ink)"}));
+  }
+  channel(140,"A","DC motor",false);
+  channel(400,"B","DC motor (optional)",true);
+  // buses: +5V at x=710 (115..375), GND at x=750 (165..425)
+  const P5="var(--v5)";
+  W("M650 115 H710 V375 M650 375 H710",P5,2.5);
+  W("M650 165 H702 A8 8 0 0 1 718 165 H750 V425 H650",undefined,2.5);
+  J(710,250);J(750,320);
+  W("M710 250 H742 A8 8 0 0 1 758 250 H830",P5,2.5);
+  W("M750 320 H830",undefined,2.5);
+  txt(S,700,108,"+5 V",{"font-size":12,"text-anchor":"end",fill:"var(--v5)","font-weight":600});
+  // tp4056
+  el("rect",{x:830,y:200,width:140,height:170,rx:5,fill:"var(--module)"},S);
+  txt(S,900,190,"TP4056 + protection",{"text-anchor":"middle","font-size":12,"font-weight":600});
+  txt(S,900,295,"03962A",{"text-anchor":"middle","font-size":11,fill:"var(--module-ink)"});
+  [["IN+",250,"start",836],["IN−",320,"start",836],["B+",225,"end",964],["B−",265,"end",964],["OUT+",305,"end",964],["OUT−",345,"end",964]].forEach(([s,y,a,x])=>txt(S,x,y+4,s,{"font-size":11,"text-anchor":a,fill:"var(--module-ink)"}));
+  // battery
+  W("M970 225 H1030 V236","var(--pos)",2.5);W("M970 265 H1030 V252","var(--ink)",2.5);
+  el("line",{x1:1014,y1:237,x2:1046,y2:237,stroke:"var(--ink)","stroke-width":3},S);
+  el("line",{x1:1022,y1:251,x2:1038,y2:251,stroke:"var(--ink)","stroke-width":5},S);
+  txt(S,1052,234,"+",{"font-size":12});
+  txt(S,1040,186,"18650",{"text-anchor":"middle","font-size":12,"font-weight":600});
+  txt(S,1040,201,"3.0–4.2 V",{"text-anchor":"middle","font-size":11,fill:"var(--muted)"});
+  // out
+  W("M970 305 H1000","var(--muted)",2);W("M970 345 H1000","var(--muted)",2);
+  el("path",{d:"M1000 299 L1010 305 L1000 311 Z",fill:"var(--muted)"},S);el("path",{d:"M1000 339 L1010 345 L1000 351 Z",fill:"var(--muted)"},S);
+  txt(S,1016,330,"load",{"font-size":11,fill:"var(--muted)"});
+  txt(S,1016,344,"(optional)",{"font-size":11,fill:"var(--muted)"});
+  // notes
+  txt(S,90,520,"Hops (⌒) mean the wires cross without connecting. Dots are connections.",{"font-size":11,fill:"var(--muted)"});
+  txt(S,1050,520,"set each MT3608 to 5.0 V before connecting",{"font-size":11,fill:"var(--bad)","text-anchor":"end"});
+})();
+
+/* =========================================================
+   04  ANNOTATED PHOTO + PERFBOARD LAYOUT
+   ========================================================= */
+const marks=[
+ [23.8,50,"18650 holder","Red lead at the top (+), black at the bottom (−)."],
+ [64.6,19.4,"Boost B (MT3608)","Input from bridge B on the right pads, 5 V out on the left."],
+ [52,37,"TP4056 charger","IN+/IN− on the left by the USB socket; B+, B−, OUT+, OUT− on the right."],
+ [71,35.4,"Battery plug","2-pin connector on B+/B−. Orange and tan wires run to the battery leads."],
+ [43.8,35,"Battery splices","Holder leads joined to the plug wires, covered in heat-shrink."],
+ [66,51,"Boost A (MT3608)","Same as boost B, fed by bridge A."],
+ [46,70,"Bridge B","Four diodes standing on end, for turbine B."],
+ [65.4,65.6,"Capacitor C1","Large electrolytic across bridge A’s output."],
+ [72.3,76,"Bridge A","Four diodes in a row, every stripe at the top."],
+ [60,86,"J1 · turbine A in","Yellow pair from the first turbine."],
+ [47,89.4,"J2 · turbine B in","Green and black pair from the second turbine."]
+];
+(function(){
+  const ph=document.getElementById("photo"),lg=document.getElementById("legend");
+  marks.forEach((m,i)=>{
+    const b=document.createElement("button");b.type="button";b.className="pin";b.style.left=m[0]+"%";b.style.top=m[1]+"%";b.textContent=i+1;b.setAttribute("aria-label",`${i+1}: ${m[2]}`);
+    const li=document.createElement("li");li.innerHTML=`<span class="n">${i+1}</span><span><b>${m[2]}</b><br><span class="muted">${m[3]}</span></span>`;
+    const on=v=>{b.classList.toggle("on",v);li.classList.toggle("on",v)};
+    [b,li].forEach(x=>{x.addEventListener("mouseenter",()=>on(true));x.addEventListener("mouseleave",()=>on(false))});
+    b.addEventListener("focus",()=>on(true));b.addEventListener("blur",()=>on(false));
+    ph.appendChild(b);lg.appendChild(li);
+  });
+})();
+
+(function(){
+  const S=document.getElementById("pcb");
+  const defs=el("defs",{},S);
+  const pat=el("pattern",{id:"holes",width:11,height:11,patternUnits:"userSpaceOnUse"},defs);
+  el("circle",{cx:5.5,cy:5.5,r:1.9,fill:"var(--board-hole)"},pat);
+  // battery holder
+  el("rect",{x:18,y:66,width:108,height:668,rx:9,fill:"var(--holder)",stroke:"var(--part-stroke)","stroke-width":1},S);
+  el("rect",{x:34,y:112,width:76,height:576,rx:12,fill:"var(--cell)"},S);
+  el("rect",{x:56,y:102,width:32,height:12,rx:3,fill:"var(--metal)"},S);
+  txt(S,72,410,"18650",{"text-anchor":"middle","font-size":15,"font-weight":600,fill:"#2a1020",transform:"rotate(-90 72 410)"});
+  txt(S,72,92,"+",{"text-anchor":"middle","font-size":16,fill:"#fff"});
+  txt(S,72,724,"−",{"text-anchor":"middle","font-size":16,fill:"#fff"});
+  // board
+  el("rect",{x:166,y:46,width:330,height:724,rx:3,fill:"var(--board)"},S);
+  el("rect",{x:166,y:46,width:330,height:724,rx:3,fill:"url(#holes)"},S);
+  function pad(x,y){el("rect",{x:x-10,y:y-7,width:20,height:14,rx:2,fill:"var(--pad)"},S)}
+  function module(x,y,w,h,name,pins){
+    el("rect",{x,y,width:w,height:h,rx:4,fill:"var(--module)"},S);
+    pins.forEach(([px,py,s,a])=>{pad(px,py);txt(S,a==="start"?px+14:px-14,py+4,s,{"font-size":10,"text-anchor":a,fill:"var(--module-ink)"})});
+    txt(S,x+w/2,y+h-9,name,{"text-anchor":"middle","font-size":11,"font-weight":600,fill:"var(--module-ink)"});
+  }
+  function boost(x,y,name){
+    const w=270,h=104;
+    module(x,y,w,h,name,[[x+14,y+24,"VOUT+","start"],[x+14,y+80,"VOUT−","start"],[x+w-14,y+24,"VIN+","end"],[x+w-14,y+80,"VIN−","end"]]);
+    el("rect",{x:x+70,y:y+30,width:40,height:40,rx:3,fill:"var(--module-2)"},S);el("circle",{cx:x+90,cy:y+50,r:7,fill:"var(--wy)"},S);
+    el("rect",{x:x+150,y:y+14,width:52,height:52,rx:8,fill:"#2a2e33"},S);txt(S,x+176,y+45,"220",{"text-anchor":"middle","font-size":12,fill:"#ddd"});
+    return {vop:[x+14,y+24],von:[x+14,y+80],vip:[x+w-14,y+24],vin:[x+w-14,y+80]};
+  }
+  const bB=boost(208,58,"BOOST B · MT3608");
+  // TP4056
+  const tx=186,ty=196,tw=262,th=124;
+  module(tx,ty,tw,th,"TP4056 · 03962A",[[tx+14,ty+20,"IN+","start"],[tx+14,ty+104,"IN−","start"],[tx+tw-14,ty+14,"OUT+","end"],[tx+tw-14,ty+44,"B+","end"],[tx+tw-14,ty+76,"B−","end"],[tx+tw-14,ty+106,"OUT−","end"]]);
+  el("rect",{x:tx-12,y:ty+46,width:30,height:32,rx:3,fill:"var(--metal)"},S);txt(S,tx+22,ty+66,"USB",{"font-size":10,fill:"var(--module-ink)"});
+  el("rect",{x:tx+80,y:ty+40,width:40,height:40,rx:2,fill:"#1d2126"},S);
+  el("rect",{x:tx+150,y:ty+30,width:26,height:22,rx:2,fill:"#1d2126"},S);el("rect",{x:tx+150,y:ty+62,width:26,height:30,rx:2,fill:"#1d2126"},S);
+  el("rect",{x:tx+100,y:ty+92,width:14,height:8,rx:1,fill:"var(--pad)"},S);txt(S,tx+118,ty+100,"R3",{"font-size":9,fill:"var(--module-ink)"});
+  const tp={inp:[tx+14,ty+20],inn:[tx+14,ty+104],bp:[tx+tw-14,ty+44],bn:[tx+tw-14,ty+76]};
+  const bA=boost(186,346,"BOOST A · MT3608");
+  // J3 battery plug
+  el("rect",{x:452,y:ty+34,width:22,height:52,rx:2,fill:"var(--holder)"},S);
+  // Bridge B: standing diodes
+  el("rect",{x:176,y:470,width:96,height:180,rx:6,fill:"none",stroke:"var(--ink)","stroke-width":1,"stroke-dasharray":"4 4",opacity:.6},S);
+  [[200,496],[200,546],[200,614],[246,614]].forEach(([x,y])=>{el("circle",{cx:x,cy:y,r:12,fill:"#202428"},S);el("path",{d:`M${x} ${y} q 26 -4 30 14`,fill:"none",stroke:"var(--metal)","stroke-width":3,"stroke-linecap":"round"},S)});
+  txt(S,0,0,"BRIDGE B",{"text-anchor":"middle","font-size":10,"font-weight":600,transform:"translate(160 560) rotate(-90)"});
+  // Bridge A: laid diodes + cap
+  el("rect",{x:292,y:448,width:196,height:210,rx:6,fill:"none",stroke:"var(--ink)","stroke-width":1,"stroke-dasharray":"4 4",opacity:.6},S);
+  el("circle",{cx:372,cy:494,r:32,fill:"var(--capbody)"},S);el("circle",{cx:372,cy:494,r:24,fill:"var(--captop)"},S);
+  el("path",{d:"M372 462 A32 32 0 0 1 404 494 L396 494 A24 24 0 0 0 372 470 Z",fill:"#ddd",opacity:.8},S);
+  txt(S,372,498,"C1",{"text-anchor":"middle","font-size":11,"font-weight":600,fill:"#222"});
+  [318,356,394,432].forEach(x=>{el("line",{x1:x,y1:534,x2:x,y2:630,stroke:"var(--metal)","stroke-width":2.5},S);el("rect",{x:x-9,y:548,width:18,height:64,rx:4,fill:"#202428"},S);el("rect",{x:x-9,y:550,width:18,height:9,fill:"#b9c0c5"},S)});
+  txt(S,0,0,"BRIDGE A",{"text-anchor":"middle","font-size":10,"font-weight":600,transform:"translate(512 640) rotate(-90)"});
+  // terminals of bridges
+  const term=(x,y,s)=>{el("circle",{cx:x,cy:y,r:5,fill:"var(--surface)",stroke:"var(--ink)","stroke-width":1.5},S);txt(S,x+(s.side<0?-9:9),y+4,s.t,{"font-size":11,"font-weight":600,"text-anchor":s.side<0?"end":"start"})};
+  const brA={p:[478,540],n:[478,600],a1:[318,640],a2:[432,640]};
+  const brB={p:[262,486],n:[262,530],a1:[200,640],a2:[246,640]};
+  // J1, J2 headers
+  el("rect",{x:330,y:728,width:52,height:22,rx:2,fill:"var(--holder)"},S);txt(S,356,722,"J1",{"text-anchor":"middle","font-size":11,"font-weight":600});
+  el("rect",{x:196,y:728,width:52,height:22,rx:2,fill:"var(--holder)"},S);txt(S,222,722,"J2",{"text-anchor":"middle","font-size":11,"font-weight":600});
+  const j1=[[343,739],[369,739]],j2=[[209,739],[235,739]];
+
+  // nets
+  const nets={
+    ac:{label:"Turbine wires (AC side)",c:"var(--wy)",paths:[]},
+    dc:{label:"Bridge → boost (raw DC)",c:"var(--wo)",paths:[]},
+    v5:{label:"5 V to charger",c:"var(--v5)",paths:[]},
+    gnd:{label:"Negative / ground",c:"var(--neg)",paths:[]},
+    bat:{label:"Battery",c:"var(--pos)",paths:[]}
+  };
+  const netG=el("g",{},S);
+  function wire(net,d,color,dash){
+    const g=el("g",{class:"net","data-net":net},netG);
+    el("path",{d,fill:"none",stroke:"var(--surface)","stroke-width":7,"stroke-linecap":"round","stroke-linejoin":"round",opacity:.9},g);
+    el("path",Object.assign({d,fill:"none",stroke:color||nets[net].c,"stroke-width":3.6,"stroke-linecap":"round","stroke-linejoin":"round"},dash?{"stroke-dasharray":dash}:{}),g);
+    return g;
+  }
+  const P=(a)=>a.join(" ");
+  // AC: J1 → bridge A, J2 → bridge B
+  wire("ac",`M${P(j1[0])} C343 700 318 680 ${P(brA.a1)}`);
+  wire("ac",`M${P(j1[1])} C369 700 432 690 ${P(brA.a2)}`,"var(--wo)");
+  wire("ac",`M${P(j2[0])} C209 700 200 680 ${P(brB.a1)}`,"var(--wg)");
+  wire("ac",`M${P(j2[1])} C235 700 246 690 ${P(brB.a2)}`,"var(--neg)");
+  // leads leaving the box
+  wire("ac",`M${P(j1[0])} V820`);wire("ac",`M${P(j1[1])} V820`,"var(--wo)");
+  wire("ac",`M${P(j2[0])} V820`,"var(--wg)");wire("ac",`M${P(j2[1])} V820`,"var(--neg)");
+  // raw DC A
+  wire("dc",`M${P(brA.p)} C520 540 520 370 ${P(bA.vip)}`);
+  wire("gnd",`M${P(brA.n)} C530 600 528 426 ${P(bA.vin)}`);
+  // raw DC B (long run up the right side)
+  wire("dc",`M${P(brB.p)} C300 470 540 470 548 380 L548 110 C548 90 520 82 ${P(bB.vip)}`);
+  wire("gnd",`M${P(brB.n)} C300 520 560 520 562 400 L562 160 C562 142 540 138 ${P(bB.vin)}`);
+  // 5V bus left side
+  wire("v5",`M${P(bB.vop)} C160 82 152 120 152 160 L152 200 C152 214 170 216 ${P(tp.inp)}`);
+  wire("v5",`M${P(bA.vop)} C162 370 152 350 152 330 L152 240 C152 226 170 216 ${P(tp.inp)}`);
+  wire("gnd",`M${P(bB.von)} C150 138 140 160 140 190 L140 290 C140 300 160 300 ${P(tp.inn)}`);
+  wire("gnd",`M${P(bA.von)} C150 426 140 410 140 390 L140 320 C140 304 160 300 ${P(tp.inn)}`);
+  // battery
+  wire("bat",`M474 ${ty+44} C560 ${ty+44} 590 30 380 28 C200 26 72 26 72 66`,"var(--wo)");
+  wire("bat",`M474 ${ty+76} C600 ${ty+76} 610 800 400 800 C220 800 72 800 72 734`,"var(--wt)");
+  // terminals on top
+  term(...brA.p,{t:"+",side:1});term(...brA.n,{t:"−",side:1});term(...brB.p,{t:"+",side:1});term(...brB.n,{t:"−",side:1});
+  [brA.a1,brA.a2,brB.a1,brB.a2].forEach(a=>el("circle",{cx:a[0],cy:a[1],r:4,fill:"var(--surface)",stroke:"var(--ink)","stroke-width":1.5},S));
+  // labels for leads
+  txt(S,356,846,"to turbine A",{"text-anchor":"middle","font-size":11,fill:"var(--muted)"});
+  txt(S,222,846,"to turbine B",{"text-anchor":"middle","font-size":11,fill:"var(--muted)"});
+  txt(S,600,600,"B− lead",{"text-anchor":"end","font-size":10,fill:"var(--muted)"});
+  txt(S,600,120,"B+ lead",{"text-anchor":"end","font-size":10,fill:"var(--muted)"});
+  // chips
+  const chips=document.getElementById("chips");let cur=null;
+  Object.entries(nets).forEach(([k,n])=>{
+    const b=document.createElement("button");b.type="button";b.className="chip";b.setAttribute("aria-pressed","false");b.id="net-"+k;
+    b.innerHTML=`<span class="swatch" style="background:${n.c}"></span>${n.label}`;
+    b.onclick=()=>{cur=cur===k?null:k;chips.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c===b&&cur?"true":"false"));
+      S.classList.toggle("dim",!!cur);netG.querySelectorAll(".net").forEach(g=>g.classList.toggle("hl",g.dataset.net===cur))};
+    chips.appendChild(b);
+  });
+})();
+
+/* =========================================================
+   05  BRIDGE DETAIL
+   ========================================================= */
+(function(){
+  const S=document.getElementById("br");
+  const W=(d,c="var(--ink)",w=2.5)=>el("path",{d,fill:"none",stroke:c,"stroke-width":w,"stroke-linecap":"round"},S);
+  W("M150 50 H470","var(--wo)",3);W("M150 280 H470","var(--ink)",3);
+  txt(S,150,38,"+ rail → C1 +  →  MT3608 VIN+",{"font-size":12,"font-weight":600,fill:"var(--wo)"});
+  txt(S,150,306,"− rail → C1 stripe  →  MT3608 VIN−",{"font-size":12,"font-weight":600});
+  function diode(x,y1,y2,lbl){ // vertical, cathode at top (y1)
+    W(`M${x} ${y1} V${y2}`,"var(--metal)",2.5);
+    const yc=(y1+y2)/2;el("rect",{x:x-12,y:yc-28,width:24,height:56,rx:5,fill:"#202428"},S);
+    el("rect",{x:x-12,y:yc-26,width:24,height:9,fill:"#c2c8cc"},S);
+    txt(S,x+20,yc+4,lbl,{"font-size":11,fill:"var(--muted)"});
+  }
+  [[210,"D1","D2"],[330,"D3","D4"]].forEach(([x,a,b])=>{diode(x,50,165,a);diode(x,165,280,b);el("circle",{cx:x,cy:165,r:5,fill:"var(--ink)"},S);el("circle",{cx:x,cy:50,r:5,fill:"var(--wo)"},S);el("circle",{cx:x,cy:280,r:5,fill:"var(--ink)"},S)});
+  W("M210 165 H70","var(--wy)",3);el("circle",{cx:70,cy:165,r:6,fill:"var(--surface)",stroke:"var(--wy)","stroke-width":3},S);
+  txt(S,70,192,"motor wire 1",{"font-size":11,"text-anchor":"middle",fill:"var(--muted)"});
+  W("M330 165 H385","var(--wy)",3);el("circle",{cx:385,cy:165,r:6,fill:"var(--surface)",stroke:"var(--wy)","stroke-width":3},S);
+  txt(S,385,192,"motor wire 2",{"font-size":11,"text-anchor":"middle",fill:"var(--muted)"});
+  // cap
+  const cx=450;el("circle",{cx,cy:50,r:5,fill:"var(--wo)"},S);el("circle",{cx,cy:280,r:5,fill:"var(--ink)"},S);
+  W(`M${cx} 50 V120`,"var(--ink)",2);W(`M${cx} 210 V280`,"var(--ink)",2);
+  el("rect",{x:cx-22,y:120,width:44,height:90,rx:8,fill:"var(--capbody)"},S);
+  el("rect",{x:cx+8,y:120,width:10,height:90,fill:"#d9d9d9",opacity:.8},S);
+  txt(S,cx-12,170,"C1",{"font-size":11,fill:"#fff","font-weight":600});
+  txt(S,cx+26,204,"stripe = −",{"font-size":10,fill:"var(--muted)"});
+  txt(S,270,325,"silver band = cathode. All four bands face the + rail.",{"font-size":11,"text-anchor":"middle",fill:"var(--muted)"});
+})();
+
+/* =========================================================
+   07  ASSEMBLY ANIMATION
+   ========================================================= */
+const A=document.getElementById("asm");
+const steps=[
+ ["Motor into the housing","Solder about 30 cm of 2-core wire to the motor tabs first. Then push the motor into the nacelle housing from the front, shaft facing forward, and lead the wires out underneath."],
+ ["Rear cap","Close the back of the housing with the round rear cap. Line up the lugs; a drop of super glue holds it if the fit is loose."],
+ ["Top cover","Press the angled cover onto the housing. Its front fork wraps around the motor end."],
+ ["Nose cone onto the shaft","Press the nose cone (hub) onto the motor shaft. It should grip tightly; glue only if it slips, and keep glue out of the motor."],
+ ["Blades into the hub","Push the three blades into the hub, all with the same face toward the wind. Balance them first (see below)."],
+ ["Tail boom and fin","Plug the short boom into the rear cap and the fin onto the boom. The fin keeps the rotor facing the wind."],
+ ["Yaw pivot","Fit the small pivot under the nacelle. This is what lets the whole head turn with the wind."],
+ ["Top cap into the pole","Push the flanged cap into the top of the pole tube."],
+ ["Head onto the pole","Drop the pivot into the cap. The head should turn freely with a light push; sand the pivot if it binds."],
+ ["Pole into the base clamp","Slide the pole into the sleeve of the base clamp."],
+ ["Locking pin","Push the ring pin through the hole in the clamp plate to lock it onto the railing."],
+ ["Done","Run the motor wires down beside the pole with some slack, plug them into J1 or J2, and let it spin."]
+];
+const asm={f:0,target:null,playing:!reduce,hold:0,spin:.35};window.__asm=asm;
+(function buildAsm(){
+  const g=(o)=>el("g",o||{},A);
+  const s={fill:"var(--part)",stroke:"var(--part-stroke)","stroke-width":1.6,"stroke-linejoin":"round"};
+  const s2=Object.assign({},s,{fill:"var(--part-2)"});
+  const parts=[];
+  function part(step,dx,dy,build,parent,label,lx,ly){const pg=el("g",{},parent||A);build(pg);parts.push({g:pg,step,dx,dy,label,lx,ly});return pg}
+  const head=el("g",{},A); // lifted as a group
+  asm.head=head;
+  // ---- base + pin + pole + cap (not in head) ----
+  part(11,0,-130,p=>{el("rect",Object.assign({x:592,y:500,width:16,height:96,rx:3},s2),p);el("circle",Object.assign({cx:600,cy:490,r:14},s2),p);el("circle",{cx:600,cy:490,r:7,fill:"var(--sunk)"},p);el("rect",Object.assign({x:584,y:500,width:32,height:8,rx:2},s2),p)},A,"Locking pin",600,466);
+  part(10,0,50,p=>{el("path",Object.assign({d:"M410 470 H492 V560 H640 Q660 560 660 580 V588 Q660 606 640 606 H410 Z"},s),p);el("circle",{cx:600,cy:583,r:10,fill:"var(--sunk)",stroke:"var(--part-stroke)","stroke-width":1.4},p);el("line",{x1:410,y1:540,x2:492,y2:540,stroke:"var(--part-stroke)","stroke-width":1,opacity:.6},p)},A,"Base clamp",560,548);
+  part(8,0,-34,p=>{el("rect",Object.assign({x:438,y:250,width:24,height:50},s),p);el("rect",Object.assign({x:420,y:232,width:60,height:20,rx:3},s2),p)},A,"Top cap",530,247);
+  part(0,0,0,p=>{el("rect",Object.assign({x:432,y:250,width:36,height:300,rx:2},s2),p);el("line",{x1:442,y1:256,x2:442,y2:540,stroke:"#fff",opacity:.35,"stroke-width":3},p)},A,"Pole",480,400);
+  // z-order: pin, pole, base sleeve, cap, head
+  A.appendChild(parts[1].g);A.appendChild(parts[2].g);
+  A.appendChild(head);
+  // ---- head parts (local coords, assembled) ----
+  part(7,0,52,p=>{el("rect",Object.assign({x:438,y:207,width:24,height:28,rx:2},s),p);el("path",Object.assign({d:"M428 204 H472 L464 214 H436 Z"},s2),p)},head,"Yaw pivot",515,228);
+  part(6,-128,0,p=>{el("rect",Object.assign({x:236,y:181,width:72,height:7,rx:2},s2),p);el("path",Object.assign({d:"M150 186 L176 96 L206 99 L244 181 L244 190 L150 190 Z"},s2),p);el("path",Object.assign({d:"M140 188 L240 186 L240 193 L150 200 Z"},s),p)},head,"Tail fin",195,80);
+  part(6,-82,0,p=>{el("rect",Object.assign({x:306,y:178,width:76,height:14,rx:3},s),p)},head,"Tail boom",344,215);
+  part(2,-46,0,p=>{el("rect",Object.assign({x:380,y:160,width:18,height:50,rx:4},s2),p);el("circle",Object.assign({cx:389,cy:156,r:6},s2),p);el("circle",Object.assign({cx:389,cy:214,r:6},s2),p)},head,"Rear cap",389,240);
+  part(1,190,0,p=>{el("rect",{x:408,y:170,width:88,height:30,rx:5,fill:"var(--metal-2)",stroke:"var(--part-stroke)","stroke-width":1},p);el("rect",{x:496,y:182,width:52,height:6,fill:"var(--metal)"},p);el("path",{d:"M412 200 q-6 30 20 40",fill:"none",stroke:"var(--wo)","stroke-width":2.5},p);el("path",{d:"M420 200 q-4 30 20 42",fill:"none",stroke:"var(--part-2)","stroke-width":2.5},p)},head,"DC motor",452,150);
+  part(0,0,0,p=>{el("rect",Object.assign({x:396,y:163,width:112,height:44,rx:8,"fill-opacity":.72},s),p);el("line",{x1:400,y1:168,x2:504,y2:168,stroke:"#fff",opacity:.3,"stroke-width":3},p)},head,"Housing",452,240);
+  part(3,0,-48,p=>{el("path",Object.assign({d:"M394 165 L406 144 H502 L520 158 V206 H508 V165 Z"},s2),p)},head,"Top cover",457,135);
+  part(4,260,0,p=>{el("path",Object.assign({d:"M508 165 H530 Q566 172 572 185 Q566 198 530 205 H508 Z"},s2),p)},head,"Nose cone",540,225);
+  const bl=part(5,320,0,p=>{asm.blades=[0,1,2].map(()=>el("path",{fill:"var(--ink)"},p))},head,"Blades",540,345);
+  asm.parts=parts;
+  // labels
+  asm.lab=el("g",{},A);
+  asm.labT=txt(asm.lab,0,0,"",{"font-size":15,"font-weight":600,"text-anchor":"middle",fill:"var(--accent)"});
+  // wind lines
+  asm.wind=el("g",{opacity:0},A);
+  for(let i=0;i<6;i++)el("line",{x1:640,y1:70+i*46,x2:900,y2:70+i*46,stroke:"var(--muted)","stroke-width":2,"stroke-linecap":"round","stroke-dasharray":"40 300"},asm.wind);
+})();
+function asmRender(f,dt){
+  const sp=asm;
+  sp.parts.forEach(p=>{
+    if(p.step===0){p.g.removeAttribute("transform");return}
+    const k=ease(clamp(f-(p.step-1),0,1));
+    p.g.setAttribute("transform",`translate(${(p.dx*(1-k)).toFixed(1)} ${(p.dy*(1-k)).toFixed(1)})`);
+  });
+  const kh=ease(clamp(f-8,0,1)); // head drop at step 9
+  sp.head.setAttribute("transform",`translate(0 ${(-120*(1-kh)).toFixed(1)})`);
+  // blades: side view projection
+  if(f>=11.2&&!reduce)sp.spin+=dt*7;
+  const hubx=556,huby=185,L=140;
+  sp.blades.forEach((b,i)=>{
+    const a=sp.spin+i*2*Math.PI/3;const c=Math.cos(a);const ty=huby-L*c;const wv=Math.abs(Math.sin(a))*5+5;const tw=Math.abs(Math.sin(a))*2+2;
+    b.setAttribute("d",`M${hubx-wv} ${huby} L${hubx-tw} ${ty} L${hubx+tw} ${ty} L${hubx+wv} ${huby} Z`);
+  });
+  sp.wind.setAttribute("opacity",clamp((f-11)*2,0,1)*.7);
+  sp.wind.querySelectorAll("line").forEach((l,i)=>l.setAttribute("stroke-dashoffset",(((sp.spin*45+i*70)%340)).toFixed(0)));
+  // label
+  const idx=clamp(Math.ceil(f-0.001),1,12);const cur=sp.parts.find(p=>p.step===idx);
+  if(cur&&idx<12){const kk=ease(clamp(f-(idx-1),0,1));const hl=idx<=8?-120*(1-kh):0;const inHead=cur.g.parentNode===sp.head;
+    sp.labT.textContent=cur.label;sp.labT.setAttribute("x",cur.lx+cur.dx*(1-kk));sp.labT.setAttribute("y",cur.ly+cur.dy*(1-kk)+(inHead?-120*(1-kh):0));sp.lab.setAttribute("opacity",1)}
+  else sp.lab.setAttribute("opacity",0);
+}
+const asmList=document.getElementById("asmList");
+steps.forEach((s,i)=>{const li=document.createElement("li");const b=document.createElement("button");b.type="button";b.innerHTML=`<span class="i">${String(i+1).padStart(2,"0")}</span><span>${s[0]}</span>`;b.onclick=()=>{asm.target=i+1;asm.playing=false;updBtn()};li.appendChild(b);asmList.appendChild(li)});
+const playBtn=document.getElementById("asmPlay");
+function updBtn(){playBtn.textContent=asm.playing?"Pause":"Play"}
+playBtn.onclick=()=>{asm.playing=!asm.playing;asm.target=null;if(asm.playing&&asm.f>=12)asm.f=0;updBtn()};
+document.getElementById("asmNext").onclick=()=>{asm.playing=false;asm.target=Math.min(12,Math.floor(asm.f+0.001)+1);updBtn()};
+document.getElementById("asmPrev").onclick=()=>{asm.playing=false;asm.target=Math.max(1,Math.ceil(asm.f-0.001)-1);updBtn()};
+let lastIdx=-1;
+function asmText(){
+  const idx=clamp(Math.ceil(asm.f-0.001),1,12);
+  const key=idx*2+(asm.f>=idx-0.01?1:0);
+  if(key===lastIdx)return;lastIdx=key;
+  document.getElementById("asmK").textContent=`Step ${idx} of 12`;
+  document.getElementById("asmT").textContent=steps[idx-1][0];
+  document.getElementById("asmD").textContent=steps[idx-1][1];
+  [...asmList.children].forEach((li,i)=>{li.classList.toggle("done",i+1<idx||(i+1===idx&&asm.f>=idx-0.01));li.classList.toggle("cur",i+1===idx)});
+}
+function asmStep(dt){
+  if(asm.target!=null){const d=asm.target-asm.f;if(Math.abs(d)<0.01){asm.f=asm.target;asm.target=null}else asm.f+=Math.sign(d)*Math.min(Math.abs(d),dt*(d<0?3:1.4))}
+  else if(asm.playing){
+    if(asm.hold>0){asm.hold-=dt}
+    else{const before=asm.f;asm.f+=dt*0.9;
+      if(asm.f>=12.0&&before<12){asm.f=12;asm.hold=5}
+      else if(Math.floor(asm.f)>Math.floor(before)&&asm.f<12){asm.f=Math.floor(asm.f);asm.hold=1.5}
+      if(asm.f>=12&&asm.hold<=0&&before>=12){asm.f=0;asm.spin=.35}}
+  }
+}
+if(reduce){asm.f=12}
+asmRender(asm.f,0);asmText();
+
+/* ---------- main loop ---------- */
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(!window.__pause){
+    if(!reduce){simStep(dt);simDraw()}
+    asmStep(dt);asmRender(asm.f,dt);asmText();
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.__render={simStep,simDraw,asmStep,asmRender,asmText};
+})();
+</script>
+
+</body>
+</html>
